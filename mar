@@ -1,0 +1,67 @@
+import pygame
+import random
+from pygame.locals import Rect
+
+dis = pygame.display.set_mode((525,525))
+
+x = 200
+y = 250
+
+x_change = 0
+y_change = 0
+
+gameover = False
+ghaza = True
+rect_ghaza = Rect([300,250,25,25])
+
+while not gameover:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            gameover = True
+        if event.type == pygame.KEYDOWN:
+            x_change = 0
+            y_change = 0
+            if event.key == pygame.K_w:
+                y_change = -25
+            if event.key == pygame.K_s:
+                y_change = 25
+            if event.key == pygame.K_d:
+                x_change = 25
+            if event.key == pygame.K_a:
+                x_change = -25
+
+    dis.fill((0,0,0))
+
+    x += x_change
+    y += y_change
+
+    if not x > 0 or not x < 500:
+        gameover = True
+    if not y > 0 or not y < 500:
+        gameover = True
+    
+    sar = Rect([x,y,25,25])
+    snake = [Rect([x-25,y,25,25])]
+
+    for i in snake:
+        if pygame.Rect.colliderect(sar,i):
+            gameover = True
+
+    pygame.draw.rect(dis,(0,65,124),sar)
+
+    for i in snake:
+        pygame.draw.rect(dis,(0,94,181),i)
+
+    if pygame.Rect.colliderect(sar,rect_ghaza):
+        ghaza = False
+
+    if ghaza == False:
+        x_ghaza = int(random.randint(0,500)/25)*25
+        y_ghaza = int(random.randint(0,500)/25)*25
+        rect_ghaza = Rect([x_ghaza,y_ghaza,25,25])
+        ghaza = True
+
+    pygame.draw.rect(dis,(255,0,0),rect_ghaza)
+
+    pygame.display.update()
+    pygame.time.Clock().tick(5)

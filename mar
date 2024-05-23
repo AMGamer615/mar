@@ -1,17 +1,27 @@
 import pygame
 import random
-from pygame.locals import Rect
+from pygame import Rect
+
+pygame.init()
+
+BLACK = (0,0,0)
+AQUA = (0,94,181)
+BLUE = (0,65,124)
+RED = (255,0,0)
+WHITE = (255,255,255)
 
 dis = pygame.display.set_mode((525,525))
+gameover = False
 
-x = 200
-y = 250
+snake = [Rect([175,250,25,25]),Rect([200,250,25,25])]
 
-x_change = 0
+x_change = 25
 y_change = 0
 
-gameover = False
+fps = 5
+
 ghaza = True
+score = 0
 rect_ghaza = Rect([300,250,25,25])
 
 while not gameover:
@@ -29,39 +39,54 @@ while not gameover:
                 x_change = 25
             if event.key == pygame.K_a:
                 x_change = -25
+    dis.fill(BLACK)
 
-    dis.fill((0,0,0))
+    snake.append(Rect([snake[-1].x+x_change,snake[-1].y+y_change,25,25]))
 
-    x += x_change
-    y += y_change
+    sar = snake[-1]
 
-    if not x > 0 or not x < 500:
-        gameover = True
-    if not y > 0 or not y < 500:
-        gameover = True
-    
-    sar = Rect([x,y,25,25])
-    snake = [Rect([x-25,y,25,25])]
-
-    for i in snake:
-        if pygame.Rect.colliderect(sar,i):
+    for a,i in enumerate(snake):
+        if a == len(snake)-1:
+            continue
+        elif pygame.Rect.colliderect(sar,i):
             gameover = True
-
-    pygame.draw.rect(dis,(0,65,124),sar)
-
-    for i in snake:
-        pygame.draw.rect(dis,(0,94,181),i)
+            break
 
     if pygame.Rect.colliderect(sar,rect_ghaza):
+        score += 1
         ghaza = False
+    else:
+        snake.pop(0)
 
     if ghaza == False:
-        x_ghaza = int(random.randint(0,500)/25)*25
-        y_ghaza = int(random.randint(0,500)/25)*25
-        rect_ghaza = Rect([x_ghaza,y_ghaza,25,25])
-        ghaza = True
+        while not ghaza:
+            x_ghaza = int(random.randint(0,500)/25)*25
+            y_ghaza = int(random.randint(0,500)/25)*25
+            rect_ghaza = Rect([x_ghaza,y_ghaza,25,25])
+            ghaza = True
+            for i in snake:
+                if pygame.Rect.colliderect(i,rect_ghaza):
+                    ghaza = False
+                    break
+    
+    pygame.draw.rect(dis,RED,rect_ghaza)
 
-    pygame.draw.rect(dis,(255,0,0),rect_ghaza)
+    for i in snake:
+        if i == sar:
+            pygame.draw.rect(dis,AQUA,i)
+        else:
+            pygame.draw.rect(dis,BLUE,i)
 
+    if not sar.x >= 0 or not sar.x <= 500:
+        gameover = True
+    if not sar.y >= 0 or not sar.y <= 500:
+        gameover = True
+
+    fps = 5 + score//5
+
+    font = pygame.font.Font(None, 36)
+    score_text = font.render(f"Score: {score}", True, WHITE)
+    dis.blit(score_text, (10, 10))
+            
     pygame.display.update()
-    pygame.time.Clock().tick(5)
+    pygame.time.Clock().tick(fps)
